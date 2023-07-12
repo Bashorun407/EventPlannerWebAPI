@@ -13,23 +13,19 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 @Entity
-@Table(name = "event")
-public class Events {
+@Table(name = "comment_table")
+public class Comments {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String eventName;
 
-    private String description;
+    private String comment;
 
-    private String organizerId;
+    private String username;
 
-    private String eventId;
-
-    private String address;
-
-    private LocalDateTime startDate;
+    private LocalDateTime commentTime;
 
 }
-

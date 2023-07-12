@@ -72,5 +72,16 @@
 			</plugin>
 		</plugins>
 	</build>
+	<profiles>
+		<profile>
+			<id>EventPlannerApp</id>
+
+			<properties>
+				<spring.profiles.active>
+					EventPlannerApp
+				</spring.profiles.active>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

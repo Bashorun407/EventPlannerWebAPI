@@ -3,27 +3,52 @@ package com.akinnova.EventPlannerApi.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Data
 @Builder
 @Entity
-@Table(name = "participant")
+@Table(name = "participant", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "participantId"),
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "phoneNumber")
+})
+
 public class Participant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
-    public String organizerId;
+    private Long id;
 
-    public String participantFirstName;
+    private String participantId;
 
-    public String ParticipantLastName;
-    public String email;
+    private String eventName;
 
-    public String phoneNumber;
+    private String eventId;
 
-    public String RSVPStatus;
+    private String participantFirstName;
+
+    private String participantLastName;
+
+    private String participantRole;
+
+    private String email;
+
+    private String phoneNumber;
+
+    private String rsvpStatus;
+
+    @OneToMany
+    @JoinTable(name = "participant_event",
+            joinColumns = @JoinColumn(name = "participant_id", referencedColumnName = "participantId"),
+            inverseJoinColumns = @JoinColumn(name = "event", referencedColumnName = "eventName")
+    )
+    private List<Events> events;
 }
 

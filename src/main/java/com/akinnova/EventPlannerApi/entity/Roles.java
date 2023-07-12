@@ -6,30 +6,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @Builder
-@Entity
-@Table(name = "event")
-public class Events {
+@Entity(name = "roles")
+public class Roles {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private String eventName;
-
-    private String description;
-
-    private String organizerId;
-
-    private String eventId;
-
-    private String address;
-
-    private LocalDateTime startDate;
-
+    private String roleName;
 }
-

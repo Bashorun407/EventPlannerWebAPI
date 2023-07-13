@@ -1,6 +1,7 @@
 package com.akinnova.EventPlannerApi.controller.assignmentController;
 
-import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentCreationDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDeleteDto;
 import com.akinnova.EventPlannerApi.entity.Assignment;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.service.assignmentService.AssignmentServiceImpl;
@@ -20,7 +21,7 @@ public class AssignmentController {
 
     //This method was implemented in Participant entity class
     @GetMapping("/assignment")
-    public ResponsePojo<Assignment> createAssignment(@RequestBody AssignmentDto assignmentDto) {
+    public ResponsePojo<Assignment> createAssignment(@RequestBody AssignmentCreationDto assignmentDto) {
         return assignmentService.createAssignment(assignmentDto);
     }
 
@@ -31,9 +32,15 @@ public class AssignmentController {
     }
 
     //Method to fetch assignment by email
-    @GetMapping("/assignmentE/{email}")
+    @GetMapping("/assigneeMail/{email}")
     public ResponsePojo<Assignment> findAssignmentByEmail(@PathVariable String email) {
         return assignmentService.findAssignmentByEmail(email);
+    }
+
+    //This method finds Participants by EventId
+    @GetMapping("/assigneeEvent/{eventId}")
+    public ResponsePojo<Assignment> findAssignmentByEventId(@PathVariable String eventId) {
+        return assignmentService.findAssignmentByEventId(eventId);
     }
 
     //Method to fetch assignment by phone number
@@ -44,13 +51,13 @@ public class AssignmentController {
 
     //Method to update assignment
     @PutMapping("/update")
-    public ResponseEntity<?> updateAssignment(@RequestBody AssignmentDto assignmentDto) {
+    public ResponseEntity<?> updateAssignment(@RequestBody AssignmentCreationDto assignmentDto) {
         return assignmentService.updateAssignment(assignmentDto);
     }
 
     //Method to delete assignment
-    @DeleteMapping("/delete/{phoneNumber}")
-    public ResponseEntity<?> deleteAssignment(@PathVariable String phoneNumber) {
-        return assignmentService.deleteAssignment(phoneNumber);
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteAssignment(@RequestBody AssignmentDeleteDto assignmentDeleteDto) {
+        return assignmentService.deleteAssignment(assignmentDeleteDto);
     }
 }

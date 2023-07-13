@@ -8,13 +8,13 @@ import com.akinnova.EventPlannerApi.email.EmailService;
 import com.akinnova.EventPlannerApi.entity.Organizer;
 import com.akinnova.EventPlannerApi.entity.Roles;
 import com.akinnova.EventPlannerApi.exception.ApiException;
+import com.akinnova.EventPlannerApi.repository.LoggedInRepository;
 import com.akinnova.EventPlannerApi.repository.OrganizerRepository;
 import com.akinnova.EventPlannerApi.repository.RolesRepository;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.response.ResponseUtils;
 
 import com.akinnova.EventPlannerApi.service.loggerService.LoggedInUsersImpl;
-import com.akinnova.EventPlannerApi.service.organizerService.IOrganizerService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,6 +32,7 @@ public class OrganizerServiceImpl implements IOrganizerService {
     private final EmailService emailService;
     private final RolesRepository rolesRepository;
     private final OrganizerRepository organizerRepository;
+    private final LoggedInRepository loggedInRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final LoggedInUsersImpl loggedInUsers;
@@ -39,12 +40,14 @@ public class OrganizerServiceImpl implements IOrganizerService {
     //Class Constructor
 
 
-    public OrganizerServiceImpl(EmailService emailService, RolesRepository rolesRepository, OrganizerRepository organizerRepository,
+    public OrganizerServiceImpl(EmailService emailService, RolesRepository rolesRepository,
+                                OrganizerRepository organizerRepository, LoggedInRepository loggedInRepository,
                                 AuthenticationManager authenticationManager,
                                 PasswordEncoder passwordEncoder, LoggedInUsersImpl loggedInUsers) {
         this.emailService = emailService;
         this.rolesRepository = rolesRepository;
         this.organizerRepository = organizerRepository;
+        this.loggedInRepository = loggedInRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.loggedInUsers = loggedInUsers;
@@ -69,8 +72,11 @@ public class OrganizerServiceImpl implements IOrganizerService {
        EmailDetail emailDetail = EmailDetail.builder()
                 .subject("Event Planner Accounts Creation")
                 .body("Good day " + organizerDto.getLastName() +", " + organizerDto.getFirstName()
-                        + "\n You have successfully created an account with EventPlannerApp : "
-                        + "\n"
+                        + "\n You have successfully created an account with ConvenerApp . "
+                        + "\n Your account details are: \n"
+                        + "Username: " + organizerDto.getUsername() + "\n"
+                        + "Password: " + organizerDto.getPassword() + "\n"
+                        + "Organizer id: " + organizerToReturn.getOrganizerId()
                         + "Thank you.")
                 .recipient(organizerDto.getEmail())
                 .build();
@@ -98,7 +104,7 @@ public class OrganizerServiceImpl implements IOrganizerService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        //Organizers are automatically logged in here using loggedInUsers service
+        //Organizers that are logged in are automatically added into the loggedIn repository
         loggedInUsers.userLogIn(loginDto);
 
         return new ResponseEntity<>("User " + loginDto.getUsername() + " logged in successfully", HttpStatus.OK);
@@ -148,10 +154,17 @@ public class OrganizerServiceImpl implements IOrganizerService {
 
     @Override
     public ResponseEntity<?> updateOrganizer(OrganizerUpdateDto organizerUpdateDto) {
-
+        //Checks if an organizer exists in the Organizer database
         if(!organizerRepository.existsByOrganizerId(organizerUpdateDto.getOrganizerId())){
-            return new ResponseEntity<>("Organizer with id: " + organizerUpdateDto.getOrganizerId() + " does not exist.",
+            return new ResponseEntity<>("Organizer with id: " + organizerUpdateDto.getOrganizerId()
+                    + " does not exist.",
                     HttpStatus.NOT_FOUND);
+        }
+
+        //Checks if Organizer is logged in
+        if(!loggedInRepository.existsByUsername(organizerUpdateDto.getUsername())){
+            return new ResponseEntity<>("Organizer with username: " + organizerUpdateDto.getUsername()
+                    + "is not logged in", HttpStatus.FORBIDDEN);
         }
 
         Organizer organizerToUpdate = organizerRepository.findByOrganizerId(organizerUpdateDto.getOrganizerId()).get();
@@ -170,6 +183,7 @@ public class OrganizerServiceImpl implements IOrganizerService {
 
     @Override
     public ResponseEntity<?> deleteOrganizer(String organizerId) {
+        //Checks if the organizer exists in the Organizer database
         if(!organizerRepository.existsByOrganizerId(organizerId)){
             return new ResponseEntity<>("Organizer with id: " + organizerId + " does not exist.", HttpStatus.NOT_FOUND);
         }

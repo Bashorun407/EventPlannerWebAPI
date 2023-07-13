@@ -40,6 +40,7 @@ public class EventsServiceImpl implements IEventsService {
                 .organizerId(eventsDto.getOrganizerId())
                 .eventId(ResponseUtils.generateUniqueIdentifier(5, eventsDto.getEventName()))
                 .address(eventsDto.getAddress())
+                .eventCompletion(false)
                 .startDate(LocalDateTime.of(eventsDto.getYear(),eventsDto.getMonth(), eventsDto.getDay(),
                         eventsDto.getHour(), eventsDto.getMinute()))
                 .build();
@@ -88,6 +89,7 @@ public class EventsServiceImpl implements IEventsService {
         }
 
         Events eventToUpdate = eventsRepository.findByEventId(eventsUpdateDto.getEventId()).get();
+        eventToUpdate.setEventName(eventToUpdate.getEventName());
         eventToUpdate.setAddress(eventsUpdateDto.getAddress());
         eventToUpdate.setStartDate(LocalDateTime.of(eventsUpdateDto.getYear(), eventsUpdateDto.getMonth(), eventsUpdateDto.getDay(),
                 eventsUpdateDto.getHour(), eventsUpdateDto.getMinute()));
@@ -97,6 +99,13 @@ public class EventsServiceImpl implements IEventsService {
 
         return new ResponseEntity<>("Event name: " + eventToUpdate.getEventName() + " has been updated",
                 HttpStatus.ACCEPTED);
+    }
+
+    // TODO: 13/07/2023 This method attempts auto-update of eventCompletion status 
+    //This method auto updates the eventCompletion status once the eventDate tallies with System Date
+    @Override
+    public ResponseEntity<?> autoUpdate() {
+        return null;
     }
 
     @Override

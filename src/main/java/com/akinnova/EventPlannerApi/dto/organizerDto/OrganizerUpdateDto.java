@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class OrganizerUpdateDto {
+
     private String organizerId;
 
     private String username;

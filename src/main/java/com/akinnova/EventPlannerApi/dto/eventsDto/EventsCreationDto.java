@@ -12,8 +12,6 @@ public class EventsCreationDto {
 
     private String organizerId;
 
-    private String eventId;
-
     private String address;
 
     private int year;

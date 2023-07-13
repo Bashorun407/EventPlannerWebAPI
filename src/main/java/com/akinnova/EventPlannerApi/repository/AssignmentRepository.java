@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     Boolean existsByEmail(String username);
     Boolean existsByPhoneNumber(String phoneNumber);
+    Optional<Assignment> findByEventId(String eventId);
     Optional<Assignment> findByTaskName(String taskName);
     Optional<Assignment> findByEmail(String email);
     Optional<Assignment> findByPhoneNumber(String phoneNumber);

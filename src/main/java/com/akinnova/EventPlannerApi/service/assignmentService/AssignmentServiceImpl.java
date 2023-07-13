@@ -1,8 +1,12 @@
 package com.akinnova.EventPlannerApi.service.assignmentService;
-import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentCreationDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDeleteDto;
 import com.akinnova.EventPlannerApi.entity.Assignment;
 import com.akinnova.EventPlannerApi.exception.ApiException;
 import com.akinnova.EventPlannerApi.repository.AssignmentRepository;
+
+import com.akinnova.EventPlannerApi.repository.LoggedInRepository;
+import com.akinnova.EventPlannerApi.repository.OrganizerRepository;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.response.ResponseUtils;
 import org.springframework.http.HttpStatus;
@@ -16,14 +20,20 @@ import java.util.Optional;
 public class AssignmentServiceImpl implements IAssignmentService {
 
     private final AssignmentRepository assignmentRepository;
+    private final OrganizerRepository organizerRepository;
+    private final LoggedInRepository loggedInRepository;
 
     //Class Constructor
-    public AssignmentServiceImpl(AssignmentRepository assignmentRepository) {
+    public AssignmentServiceImpl(AssignmentRepository assignmentRepository, OrganizerRepository organizerRepository,
+                                 LoggedInRepository loggedInRepository) {
         this.assignmentRepository = assignmentRepository;
+        this.organizerRepository = organizerRepository;
+        this.loggedInRepository = loggedInRepository;
     }
 
+    //This method is called in the Participant's Service class through dependency injection
     @Override
-    public ResponsePojo<Assignment> createAssignment(AssignmentDto assignmentDto) {
+    public ResponsePojo<Assignment> createAssignment(AssignmentCreationDto assignmentDto) {
 
         Assignment assignment = Assignment.builder()
                 .taskName(assignmentDto.getTaskName())
@@ -45,45 +55,64 @@ public class AssignmentServiceImpl implements IAssignmentService {
         return responsePojo;
     }
 
+    //This method can be called by organizers to check all participants that are assigned tasks
     @Override
     public ResponsePojo<List<Assignment>> findAllAssignments() {
-
         List<Assignment> assignmentList = assignmentRepository.findAll();
 
         ResponsePojo<List<Assignment>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("All assignments: ");
+        responsePojo.setMessage("All assignees: ");
         responsePojo.setData(assignmentList);
         return responsePojo;
     }
 
+    //This method finds Participants that have been assigned tasks by email
     @Override
     public ResponsePojo<Assignment> findAssignmentByEmail(String email) {
         Optional<Assignment> assignmentOptional = assignmentRepository.findByEmail(email);
-        assignmentOptional.orElseThrow(()-> new ApiException("Assignment with input email not found."));
+        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
 
         ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignment found by Email: ");
+        responsePojo.setMessage("Assignee found by Email: ");
         responsePojo.setData(assignmentOptional.get());
 
         return responsePojo;
     }
 
+    //This method finds Participants by EventId
+    @Override
+    public ResponsePojo<Assignment> findAssignmentByEventId(String eventId) {
+
+        Optional<Assignment> assignmentOptional = assignmentRepository.findByEventId(eventId);
+        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
+
+        ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
+        responsePojo.setMessage("Assignee found by EventId: ");
+        responsePojo.setData(assignmentOptional.get());
+
+        return responsePojo;
+    }
+
+    //This method finds Participants that have been assigned tasks by phone number
     @Override
     public ResponsePojo<Assignment> findAssignmentByPhoneNumber(String phoneNumber) {
         Optional<Assignment> assignmentOptional = assignmentRepository.findByPhoneNumber(phoneNumber);
-        assignmentOptional.orElseThrow(()-> new ApiException("Assignment with input email not found."));
+        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
 
         ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignment found by Email: ");
+        responsePojo.setMessage("Assignee found by Email: ");
         responsePojo.setData(assignmentOptional.get());
 
         return responsePojo;
     }
 
+    //Here Organizer can update Participant's assignment/task
     @Override
-    public ResponseEntity<?> updateAssignment(AssignmentDto assignmentDto) {
+    public ResponseEntity<?> updateAssignment(AssignmentCreationDto assignmentDto) {
+
+        //Checks that participant exists by phone number
         if(!assignmentRepository.existsByPhoneNumber(assignmentDto.getPhoneNumber()))
-            return new ResponseEntity<>("Assignment with the phone number does not exist", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Assignee with the phone number does not exist", HttpStatus.BAD_REQUEST);
 
         Optional<Assignment> assignmentOptional = assignmentRepository.findByPhoneNumber(assignmentDto.getPhoneNumber());
         Assignment assignmentToUpdate = assignmentOptional.get();
@@ -98,20 +127,47 @@ public class AssignmentServiceImpl implements IAssignmentService {
 
         //Save update to database
         assignmentRepository.save(assignmentToUpdate);
-        return new ResponseEntity<>("Assignment details updated successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Assignee details updated successfully", HttpStatus.OK);
     }
 
+    //This method removes Participants from the Assignment database: determined by the Organizer
     @Override
-    public ResponseEntity<?> deleteAssignment(String phoneNumber) {
+    public ResponseEntity<?> deleteAssignment(AssignmentDeleteDto assignmentDeleteDto) {
 
-        if(!assignmentRepository.existsByPhoneNumber(phoneNumber))
-            return new ResponseEntity<>("Assignment with the phone number does not exist", HttpStatus.BAD_REQUEST);
+        //Checks if Organizer id exists in Organizer repository
+        if(!organizerRepository.existsByOrganizerId(assignmentDeleteDto.getOrganizerId())){
+            return new ResponseEntity<>("Organizer with Organizer ID: " + assignmentDeleteDto.getOrganizerId()
+                    + " does not exist", HttpStatus.NOT_FOUND);
+        }
 
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByPhoneNumber(phoneNumber);
+        if(!loggedInRepository.existsByUsername(assignmentDeleteDto.getUsername())){
+            return new ResponseEntity<>("Organizer with username: " + assignmentDeleteDto.getUsername()
+                    + " is not logged in.", HttpStatus.NOT_FOUND);
+        }
+
+        if(!assignmentRepository.existsByPhoneNumber(assignmentDeleteDto.getPhoneNumber()))
+            return new ResponseEntity<>("Assignment with the phone number does not exist",
+                    HttpStatus.BAD_REQUEST);
+
+        Optional<Assignment> assignmentOptional = assignmentRepository
+                .findByPhoneNumber(assignmentDeleteDto.getPhoneNumber());
+
         Assignment assignmentToDelete = assignmentOptional.get();
 
         assignmentRepository.delete(assignmentToDelete);
 
-        return new ResponseEntity<>("Assignment deleted successfully", HttpStatus.OK);
+        return new ResponseEntity<>("Assignee deleted successfully", HttpStatus.OK);
     }
+
+    // TODO: 13/07/2023 Attempt to create an automatic delete method to remove all Assignees when event is over
+
+    //This method attempts to delete automatically
+
+    @Override
+    public ResponseEntity<?> autoDeleteAssignment() {
+        //Checks Assignment repository for events whose dates are same as the system's date.
+        return null;
+    }
+
+
 }

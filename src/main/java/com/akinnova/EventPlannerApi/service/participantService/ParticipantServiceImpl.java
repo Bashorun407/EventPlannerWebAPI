@@ -64,6 +64,7 @@ public class ParticipantServiceImpl implements IParticipantService {
 
             Assignment assignment = Assignment.builder()
                     .taskName(participantDto.getParticipantRole())
+                    .eventId(participantDto.getEventId())
                     .firstName(participantDto.getParticipantFirstName())
                     .lastName(participantDto.getParticipantLastName())
                     .description("Participant will carry out task assigned.")

@@ -22,6 +22,8 @@ public class Assignment {
 
     private String taskName;
 
+    private String eventId;
+
     private String description;
 
     private String firstName;

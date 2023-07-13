@@ -3,8 +3,10 @@ package com.akinnova.EventPlannerApi.dto.assignmentDto;
 import lombok.Data;
 
 @Data
-public class AssignmentDto {
+public class AssignmentCreationDto {
     private String taskName;
+
+    private String eventId;
 
     private String description;
 

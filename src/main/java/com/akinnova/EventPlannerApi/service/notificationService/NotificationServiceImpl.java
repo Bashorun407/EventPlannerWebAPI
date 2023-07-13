@@ -97,9 +97,10 @@ public class NotificationServiceImpl implements INotificationService {
             emailDetail = EmailDetail.builder()
                     .subject(notification.getSubject())
                     .body("Good day " + participant.getParticipantLastName() +", " + participant.getParticipantFirstName()
-                            + "\n You have been invited to : " + notification.getEventName()
-                            + "\n" +notification.getMailBody()
-                    + "Be there.")
+                            + "\n You have been invited to" + notification.getEventName()  + notification.getSendDate() + "."
+                            + "\n\n" +notification.getMailBody()
+                            + "\n\n Event id: " + notification.getEventId()
+                    + "\n Be there.")
                     .recipient(participant.getEmail())
                     .build();
 

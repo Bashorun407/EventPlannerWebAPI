@@ -90,7 +90,7 @@ public class CommentServiceImpl implements ICommentService {
             return new ResponseEntity<>("User is not logged in", HttpStatus.BAD_REQUEST);
         }
 
-        //Check that user is in Comments repository
+        //Check that user's comment is in Comments repository
         if(!commentRepository.existsByUsername(commentDto.getUsername())){
             return new ResponseEntity<>("Comments by user: " + commentDto.getUsername() + " not found.",
                     HttpStatus.NOT_FOUND);

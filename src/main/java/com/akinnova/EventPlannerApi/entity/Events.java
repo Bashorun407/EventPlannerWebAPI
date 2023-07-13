@@ -29,6 +29,8 @@ public class Events {
 
     private String address;
 
+    private Boolean eventCompletion;
+
     private LocalDateTime startDate;
 
 }

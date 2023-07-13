@@ -14,6 +14,7 @@ public interface IEventsService {
     ResponsePojo<Events> findEventByEventName(String eventName);
     //ResponsePojo<List<Events>> findEventByVenue(String venue);
     ResponseEntity<?> updateEvent(EventsUpdateDto eventsUpdateDto);
+    ResponseEntity<?> autoUpdate();
     ResponseEntity<?> deleteEvent(String eventId);
 
 

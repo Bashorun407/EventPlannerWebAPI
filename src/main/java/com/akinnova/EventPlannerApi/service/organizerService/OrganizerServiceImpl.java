@@ -76,8 +76,8 @@ public class OrganizerServiceImpl implements IOrganizerService {
                         + "\n Your account details are: \n"
                         + "Username: " + organizerDto.getUsername() + "\n"
                         + "Password: " + organizerDto.getPassword() + "\n"
-                        + "Organizer id: " + organizerToReturn.getOrganizerId()
-                        + "Thank you.")
+                        + "Organizer id: " + organizerToReturn.getOrganizerId() + "\n"
+                        + "\n Thank you.")
                 .recipient(organizerDto.getEmail())
                 .build();
 

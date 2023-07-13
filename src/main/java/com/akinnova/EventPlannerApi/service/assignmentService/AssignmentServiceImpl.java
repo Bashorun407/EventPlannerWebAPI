@@ -81,13 +81,13 @@ public class AssignmentServiceImpl implements IAssignmentService {
 
     //This method finds Participants by EventId
     @Override
-    public ResponsePojo<Assignment> findAssignmentByEventId(String eventId) {
+    public ResponsePojo<List<Assignment>> findAssignmentByEventId(String eventId) {
 
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByEventId(eventId);
+        Optional<List<Assignment>> assignmentOptional = assignmentRepository.findByEventId(eventId);
         assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
 
-        ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignee found by EventId: ");
+        ResponsePojo<List<Assignment>> responsePojo = new ResponsePojo<>();
+        responsePojo.setMessage("Assignees found by EventId: ");
         responsePojo.setData(assignmentOptional.get());
 
         return responsePojo;

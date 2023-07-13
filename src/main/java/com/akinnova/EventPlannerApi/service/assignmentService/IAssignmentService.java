@@ -13,7 +13,7 @@ public interface IAssignmentService {
     ResponsePojo<Assignment> createAssignment(AssignmentCreationDto assignmentDto);
     ResponsePojo<List<Assignment>> findAllAssignments();
     ResponsePojo<Assignment> findAssignmentByEmail(String email);
-    ResponsePojo<Assignment> findAssignmentByEventId(String eventId);
+    ResponsePojo<List<Assignment>> findAssignmentByEventId(String eventId);
     ResponsePojo<Assignment> findAssignmentByPhoneNumber(String phoneNumber);
     ResponseEntity<?> updateAssignment(AssignmentCreationDto assignmentDto);
     ResponseEntity<?> deleteAssignment(AssignmentDeleteDto assignmentDeleteDto);

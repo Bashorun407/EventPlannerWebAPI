@@ -39,7 +39,7 @@ public class AssignmentController {
 
     //This method finds Participants by EventId
     @GetMapping("/assigneeEvent/{eventId}")
-    public ResponsePojo<Assignment> findAssignmentByEventId(@PathVariable String eventId) {
+    public ResponsePojo<List<Assignment>> findAssignmentByEventId(@PathVariable String eventId) {
         return assignmentService.findAssignmentByEventId(eventId);
     }
 

@@ -70,14 +70,14 @@ public class OrganizerServiceImpl implements IOrganizerService {
        Organizer organizerToReturn = organizerRepository.save(organizer);
 
        EmailDetail emailDetail = EmailDetail.builder()
-                .subject("Event Planner Accounts Creation")
+                .subject("ConvenerApp Accounts Creation")
                 .body("Good day " + organizerDto.getLastName() +", " + organizerDto.getFirstName()
                         + "\n You have successfully created an account with ConvenerApp . "
                         + "\n Your account details are: \n"
                         + "Username: " + organizerDto.getUsername() + "\n"
                         + "Password: " + organizerDto.getPassword() + "\n"
                         + "Organizer id: " + organizerToReturn.getOrganizerId() + "\n"
-                        + "\n Thank you.")
+                        + "\n\n Thank you.")
                 .recipient(organizerDto.getEmail())
                 .build();
 

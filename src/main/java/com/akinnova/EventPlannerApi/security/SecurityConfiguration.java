@@ -28,6 +28,7 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize ->
                         authorize.requestMatchers(HttpMethod.POST, "/api/v1/eventplanner/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/v1/eventplanner/auth/**").permitAll()
@@ -38,6 +39,7 @@ public class SecurityConfiguration {
 
         return httpSecurity.build();
     }
+
 
 
     @Bean

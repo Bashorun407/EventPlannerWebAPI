@@ -32,7 +32,7 @@ public class EventsServiceImpl implements IEventsService {
 
         //Check if organizer for event exists
         if(!organizerRepository.existsByOrganizerId(eventsDto.getOrganizerId())){
-            throw new ApiException(String.format("Event with id: %s does not exist", eventsDto.getOrganizerId()));
+            throw new ApiException(String.format("Organizer with id: %s does not exist", eventsDto.getOrganizerId()));
         }
         Events events = Events.builder()
                 .eventName(eventsDto.getEventName())
@@ -46,7 +46,6 @@ public class EventsServiceImpl implements IEventsService {
                 .build();
         Events savedEvent = eventsRepository.save(events);
 
-        // TODO: 11/07/2023 To implement an automatic notifier and mail sender method to organizer
 
         ResponsePojo<Events> responsePojo = new ResponsePojo<>();
         responsePojo.setMessage(String.format(ResponseUtils.CREATED_MESSAGE, savedEvent.getEventName()));
@@ -101,7 +100,6 @@ public class EventsServiceImpl implements IEventsService {
                 HttpStatus.ACCEPTED);
     }
 
-    // TODO: 13/07/2023 This method attempts auto-update of eventCompletion status 
     //This method auto updates the eventCompletion status once the eventDate tallies with System Date
     @Override
     public ResponseEntity<?> autoUpdate() {

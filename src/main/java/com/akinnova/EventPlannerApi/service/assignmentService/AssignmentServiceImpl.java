@@ -159,8 +159,6 @@ public class AssignmentServiceImpl implements IAssignmentService {
         return new ResponseEntity<>("Assignee deleted successfully", HttpStatus.OK);
     }
 
-    // TODO: 13/07/2023 Attempt to create an automatic delete method to remove all Assignees when event is over
-
     //This method attempts to delete automatically
 
     @Override

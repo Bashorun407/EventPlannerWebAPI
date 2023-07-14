@@ -81,7 +81,6 @@ public class NotificationServiceImpl implements INotificationService {
             return new ResponseEntity<>("Participants with event-id: " + eventId + " do not exist.",
                     HttpStatus.NOT_FOUND);
         }
-            // TODO: 11/07/2023 Send email to participants through participants' email
 
         //Fetch notification by eventId
         Notification notification = notificationRepository.findByEventId(eventId).get();

@@ -49,8 +49,11 @@ public class EventsController {
     }
 
     @GetMapping("/eventSearch")
-    ResponseEntity<?> searchAll(@RequestParam String eventName, @RequestParam String eventId,
-                                @RequestParam String organizerId, @RequestParam int pageNum, @RequestParam int pageSize){
+    ResponseEntity<?> searchAll(@RequestParam(required = false) String eventName,
+                                @RequestParam(required = false) String eventId,
+                                @RequestParam(required = false) String organizerId,
+                                @RequestParam(defaultValue = "1") int pageNum,
+                                @RequestParam(defaultValue = "20") int pageSize){
         return eventsService.searchAll(eventName, eventId, organizerId, pageNum, pageSize);
     }
 }

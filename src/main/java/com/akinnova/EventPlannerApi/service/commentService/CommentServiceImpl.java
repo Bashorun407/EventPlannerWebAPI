@@ -60,7 +60,7 @@ public class CommentServiceImpl implements ICommentService {
                 .orElseThrow(()-> new ApiException("There are no comments by user: " + username));
         List<CommentResponseDto> userComments = new ArrayList<>();
 
-        userCommentList.stream().map(
+        userCommentList.stream().skip(pageNum -1).limit(pageSize).map(
                 comment -> CommentResponseDto.builder()
                         .username(comment.getUsername())
                         .comment(comment.getComment())
@@ -79,7 +79,7 @@ public class CommentServiceImpl implements ICommentService {
         List<Comments> allCommentsList = commentRepository.findAll();
         List<CommentResponseDto> responseDtoList = new ArrayList<>();
 
-        allCommentsList.stream().map(
+        allCommentsList.stream().skip(pageNum -1).limit(pageSize).map(
                 comments -> CommentResponseDto.builder()
                         .comment(comments.getComment())
                         .username(comments.getUsername())
@@ -96,10 +96,9 @@ public class CommentServiceImpl implements ICommentService {
     @Override
     public ResponseEntity<?> deleteComment(CommentDto commentDto, int pageNum, int pageSize) {
         //Checks that user is logged in
-        boolean check = loggedInRepository.existsByUsername(commentDto.getUsername());
-        if(!check){
-            return new ResponseEntity<>("User is not logged in", HttpStatus.BAD_REQUEST);
-        }
+        /*
+         * There is need for delete comment implementation here
+         */
 
         return new ResponseEntity<>("Comment deleted.", HttpStatus.ACCEPTED);
     }

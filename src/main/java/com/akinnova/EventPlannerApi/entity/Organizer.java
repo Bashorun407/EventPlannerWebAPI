@@ -42,9 +42,6 @@ public class Organizer implements Serializable {
 
     private String role;
 
-//    @OneToMany
-//    private Events events;
-
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "organizer_event",
             joinColumns = @JoinColumn(name = "name", referencedColumnName = "username"),

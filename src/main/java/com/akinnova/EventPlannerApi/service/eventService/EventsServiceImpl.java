@@ -69,7 +69,7 @@ public class EventsServiceImpl implements IEventsService {
         List<Events> allEvents = eventsRepository.findAll();
         List<EventResponseDto> responseDtoList = new ArrayList<>();
 
-        allEvents.stream().map(
+        allEvents.stream().skip(pageNum - 1).limit(pageSize).map(
                 events -> EventResponseDto.builder()
                         .eventName(events.getEventName())
                         .eventId(events.getEventId())
@@ -93,7 +93,7 @@ public class EventsServiceImpl implements IEventsService {
 
         List<EventResponseDto> responseDtoList = new ArrayList<>();
 
-        eventsList.stream().map(
+        eventsList.stream().skip(pageNum - 1).limit(pageSize).map(
                 events -> EventResponseDto.builder()
                         .eventName(events.getEventName())
                         .eventId(events.getEventId())
@@ -133,7 +133,7 @@ public class EventsServiceImpl implements IEventsService {
 
         List<EventResponseDto> responseDtoList = new ArrayList<>();
 
-        eventsList.stream().map(
+        eventsList.stream().skip(pageNum - 1).limit(pageSize).map(
                 events -> EventResponseDto.builder()
                         .eventName(events.getEventName())
                         .eventId(events.getEventId())
@@ -210,7 +210,7 @@ public class EventsServiceImpl implements IEventsService {
                     orElseThrow(()-> new ApiException("Event by organizer-id: " + organizerId + " not found."));
         }
 
-        searchList.stream().map(
+        searchList.stream().skip(pageNum -1).limit(pageSize).map(
                 events -> EventResponseDto.builder()
                         .eventName(events.getEventName())
                         .eventId(events.getEventId())

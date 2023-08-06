@@ -83,7 +83,7 @@ public class AssignmentServiceImpl implements IAssignmentService {
 //        }
 
         //Writing the function using Lambda expression
-        assignmentList.stream().map(
+        assignmentList.stream().skip(pageNum - 1).limit(pageSize).map(
                 assignment -> AssignmentResponseDto.builder()
                         .firstName(assignment.getFirstName())
                         .lastName(assignment.getLastName())
@@ -125,7 +125,7 @@ public class AssignmentServiceImpl implements IAssignmentService {
         List<AssignmentResponseDto> responseDtoList = new ArrayList<>();
 
         //Using Lambda expression to return response
-        assignmentList.stream().map(
+        assignmentList.stream().skip(pageNum - 1).limit(pageSize).map(
                 assignment -> AssignmentResponseDto.builder()
                         .firstName(assignment.getFirstName())
                         .lastName(assignment.getLastName())

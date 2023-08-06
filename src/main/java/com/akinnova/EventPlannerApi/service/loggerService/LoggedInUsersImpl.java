@@ -48,7 +48,7 @@ public class LoggedInUsersImpl implements ILoggedInUsersService {
         List<LoggedInUsers> loggedInUsersList = loggedInRepository.findAll();
         List<LogResponseDto> responseDtoList = new ArrayList<>();
 
-        loggedInUsersList.stream().map(
+        loggedInUsersList.stream().skip(pageNum - 1).limit(pageSize).map(
                 loggedInUsers -> LogResponseDto.builder()
                         .username(loggedInUsers.getUsername())
                         .build()

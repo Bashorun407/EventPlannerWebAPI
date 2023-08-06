@@ -105,7 +105,7 @@ public class ParticipantServiceImpl implements IParticipantService {
         List<Participant> participantList = participantRepository.findAll();
         List<ParticipantResponseDto> responseDtoList = new ArrayList<>();
 
-        participantList.stream().map(
+        participantList.stream().skip(pageNum - 1).limit(pageSize).map(
                 participant -> ParticipantResponseDto.builder()
                         .eventName(participant.getEventName())
                         .participantId(participant.getParticipantId())

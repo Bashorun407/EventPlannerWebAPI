@@ -113,7 +113,7 @@ public class OrganizerServiceImpl implements IOrganizerService {
         List<Organizer> organizerList = organizerRepository.findAll();
         List<OrganizerResponseDto> responseDtoList = new ArrayList<>();
 
-        organizerList.stream().map(
+        organizerList.stream().skip(pageNum - 1).skip(pageSize).map(
                 organizer -> OrganizerResponseDto.builder()
                         .username(organizer.getUsername())
                         .role(organizer.getRole())

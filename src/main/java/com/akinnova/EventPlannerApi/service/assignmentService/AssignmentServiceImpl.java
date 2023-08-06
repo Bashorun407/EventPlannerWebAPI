@@ -1,6 +1,7 @@
 package com.akinnova.EventPlannerApi.service.assignmentService;
 import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentCreationDto;
 import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDeleteDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentResponseDto;
 import com.akinnova.EventPlannerApi.entity.Assignment;
 import com.akinnova.EventPlannerApi.exception.ApiException;
 import com.akinnova.EventPlannerApi.repository.AssignmentRepository;
@@ -13,8 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AssignmentServiceImpl implements IAssignmentService {
@@ -33,7 +34,7 @@ public class AssignmentServiceImpl implements IAssignmentService {
 
     //This method is called in the Participant's Service class through dependency injection
     @Override
-    public ResponsePojo<Assignment> createAssignment(AssignmentCreationDto assignmentDto) {
+    public ResponsePojo<AssignmentResponseDto> createAssignment(AssignmentCreationDto assignmentDto) {
 
         Assignment assignment = Assignment.builder()
                 .taskName(assignmentDto.getTaskName())
@@ -48,74 +49,117 @@ public class AssignmentServiceImpl implements IAssignmentService {
         //Saved created assignment to database
         Assignment savedAssignment = assignmentRepository.save(assignment);
 
-        ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
+        //Response entity
+        AssignmentResponseDto assignmentResponseDto = AssignmentResponseDto.builder()
+                .taskName(savedAssignment.getTaskName())
+                .firstName(savedAssignment.getFirstName())
+                .lastName(savedAssignment.getLastName())
+                .taskStatus(savedAssignment.getTaskStatus())
+                .build();
+
+        ResponsePojo<AssignmentResponseDto> responsePojo = new ResponsePojo<>();
         responsePojo.setMessage(String.format(ResponseUtils.CREATED_MESSAGE, savedAssignment.getLastName()));
-        responsePojo.setData(savedAssignment);
+        responsePojo.setData(assignmentResponseDto);
 
         return responsePojo;
     }
 
     //This method can be called by organizers to check all participants that are assigned tasks
     @Override
-    public ResponsePojo<List<Assignment>> findAllAssignments() {
+    public ResponseEntity<List<AssignmentResponseDto>> findAllAssignments(int pageNum, int pageSize) {
         List<Assignment> assignmentList = assignmentRepository.findAll();
+        List<AssignmentResponseDto> responseDtoList = new ArrayList<>(); //empty list for response
 
-        ResponsePojo<List<Assignment>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("All assignees: ");
-        responsePojo.setData(assignmentList);
-        return responsePojo;
+//        //Getting responseDto from each assignment object
+//        for(Assignment assignment : assignmentList){
+//            responseDtoList.add(
+//                    AssignmentResponseDto.builder()
+//                            .firstName(assignment.getFirstName())
+//                            .lastName(assignment.getLastName())
+//                            .taskName(assignment.getTaskName())
+//                            .taskStatus(assignment.getTaskStatus())
+//                            .build()
+//            );
+//        }
+
+        //Writing the function using Lambda expression
+        assignmentList.stream().map(
+                assignment -> AssignmentResponseDto.builder()
+                        .firstName(assignment.getFirstName())
+                        .lastName(assignment.getLastName())
+                        .taskName(assignment.getTaskName())
+                        .taskStatus(assignment.getTaskStatus())
+                        .build()
+        ).forEach(responseDtoList::add);
+
+        return ResponseEntity.ok().header("Assignment Page No: ", String.valueOf(pageNum))
+                .header("Assignment Page Size: ", String.valueOf(pageSize))
+                .header("Assignment Count: ", String.valueOf(assignmentList.size()))
+                .body(responseDtoList);
     }
 
     //This method finds Participants that have been assigned tasks by email
     @Override
-    public ResponsePojo<Assignment> findAssignmentByEmail(String email) {
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByEmail(email);
-        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
+    public ResponseEntity<AssignmentResponseDto> findAssignmentByEmail(String email) {
+        Assignment assignment = assignmentRepository.findByEmail(email)
+                .orElseThrow(()-> new ApiException("Assignee with input email does not exist."));
 
-        ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignee found by Email: ");
-        responsePojo.setData(assignmentOptional.get());
+        AssignmentResponseDto responseDto = AssignmentResponseDto.builder()
+                .firstName(assignment.getFirstName())
+                .lastName(assignment.getLastName())
+                .taskName(assignment.getTaskName())
+                .taskStatus(assignment.getTaskStatus())
+                .build();
 
-        return responsePojo;
+
+        return new ResponseEntity<>(responseDto, HttpStatus.FOUND);
     }
 
     //This method finds Participants by EventId
     @Override
-    public ResponsePojo<List<Assignment>> findAssignmentByEventId(String eventId) {
+    public ResponseEntity<List<AssignmentResponseDto>> findAssignmentByEventId(String eventId, int pageNum, int pageSize) {
 
-        Optional<List<Assignment>> assignmentOptional = assignmentRepository.findByEventId(eventId);
-        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
+        List<Assignment> assignmentList = assignmentRepository.findByEventId(eventId)
+                .orElseThrow(()-> new ApiException("Assignee with input email not found."));
 
-        ResponsePojo<List<Assignment>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignees found by EventId: ");
-        responsePojo.setData(assignmentOptional.get());
+        List<AssignmentResponseDto> responseDtoList = new ArrayList<>();
 
-        return responsePojo;
+        //Using Lambda expression to return response
+        assignmentList.stream().map(
+                assignment -> AssignmentResponseDto.builder()
+                        .firstName(assignment.getFirstName())
+                        .lastName(assignment.getLastName())
+                        .taskName(assignment.getTaskName())
+                        .taskStatus(assignment.getTaskStatus())
+                        .build()
+        ).forEach(responseDtoList::add);
+
+
+        return new ResponseEntity<>(responseDtoList, HttpStatus.FOUND);
     }
 
     //This method finds Participants that have been assigned tasks by phone number
     @Override
-    public ResponsePojo<Assignment> findAssignmentByPhoneNumber(String phoneNumber) {
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByPhoneNumber(phoneNumber);
-        assignmentOptional.orElseThrow(()-> new ApiException("Assignee with input email not found."));
+    public ResponseEntity<AssignmentResponseDto> findAssignmentByPhoneNumber(String phoneNumber) {
+        Assignment assignment = assignmentRepository.findByPhoneNumber(phoneNumber)
+                .orElseThrow(()-> new ApiException("Assignee with input email not found."));
 
-        ResponsePojo<Assignment> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Assignee found by Email: ");
-        responsePojo.setData(assignmentOptional.get());
+        AssignmentResponseDto responseDto = AssignmentResponseDto.builder()
+                .firstName(assignment.getFirstName())
+                .lastName(assignment.getLastName())
+                .taskName(assignment.getTaskName())
+                .taskStatus(assignment.getTaskStatus())
+                .build();
 
-        return responsePojo;
+        return new ResponseEntity<>(responseDto, HttpStatus.FOUND);
     }
 
     //Here Organizer can update Participant's assignment/task
     @Override
     public ResponseEntity<?> updateAssignment(AssignmentCreationDto assignmentDto) {
 
-        //Checks that participant exists by phone number
-        if(!assignmentRepository.existsByPhoneNumber(assignmentDto.getPhoneNumber()))
-            return new ResponseEntity<>("Assignee with the phone number does not exist", HttpStatus.BAD_REQUEST);
-
-        Optional<Assignment> assignmentOptional = assignmentRepository.findByPhoneNumber(assignmentDto.getPhoneNumber());
-        Assignment assignmentToUpdate = assignmentOptional.get();
+        Assignment assignmentToUpdate = assignmentRepository.findByPhoneNumber(assignmentDto.getPhoneNumber())
+                .orElseThrow(()-> new ApiException("There is no assignee with this phone number: " + assignmentDto.getPhoneNumber()));
 
         assignmentToUpdate.setTaskName(assignmentDto.getTaskName());
         assignmentToUpdate.setDescription(assignmentDto.getDescription());
@@ -145,27 +189,14 @@ public class AssignmentServiceImpl implements IAssignmentService {
                     + " is not logged in.", HttpStatus.NOT_FOUND);
         }
 
-        if(!assignmentRepository.existsByPhoneNumber(assignmentDeleteDto.getPhoneNumber()))
-            return new ResponseEntity<>("Assignment with the phone number does not exist",
-                    HttpStatus.BAD_REQUEST);
+        Assignment assignment = assignmentRepository
+                .findByPhoneNumber(assignmentDeleteDto.getPhoneNumber())
+                .orElseThrow(()-> new ApiException("Assignee with the phone number: " + assignmentDeleteDto.getPhoneNumber()
+                + " does not exist"));
 
-        Optional<Assignment> assignmentOptional = assignmentRepository
-                .findByPhoneNumber(assignmentDeleteDto.getPhoneNumber());
-
-        Assignment assignmentToDelete = assignmentOptional.get();
-
-        assignmentRepository.delete(assignmentToDelete);
+        assignmentRepository.delete(assignment);
 
         return new ResponseEntity<>("Assignee deleted successfully", HttpStatus.OK);
     }
-
-    //This method attempts to delete automatically
-
-    @Override
-    public ResponseEntity<?> autoDeleteAssignment() {
-        //Checks Assignment repository for events whose dates are same as the system's date.
-        return null;
-    }
-
 
 }

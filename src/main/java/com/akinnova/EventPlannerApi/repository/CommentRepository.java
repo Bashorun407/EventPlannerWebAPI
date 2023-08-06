@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 @Repository
 public interface CommentRepository extends JpaRepository<Comments, Long> {
-    Boolean existsByUsername(String username);
+//    Boolean existsByUsername(String username);
+//
     Optional<List<Comments>> findByUsername(String username);
-    Optional<List<Comments>> findByEventName(String eventName);
 }

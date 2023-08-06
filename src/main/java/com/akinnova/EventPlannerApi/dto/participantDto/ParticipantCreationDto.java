@@ -18,6 +18,4 @@ public class ParticipantCreationDto {
     private String email;
 
     private String phoneNumber;
-
-    private String rsvpStatus;
 }

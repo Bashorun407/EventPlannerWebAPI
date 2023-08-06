@@ -16,4 +16,6 @@ public class Roles {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String roleName;
+    private String emailAddress;
+    private String phoneNumber;
 }

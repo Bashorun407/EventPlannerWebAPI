@@ -1,42 +1,37 @@
 package com.akinnova.EventPlannerApi.service.commentService;
 
 import com.akinnova.EventPlannerApi.dto.commentDto.CommentDto;
+import com.akinnova.EventPlannerApi.dto.commentDto.CommentResponseDto;
 import com.akinnova.EventPlannerApi.entity.Comments;
+import com.akinnova.EventPlannerApi.exception.ApiException;
 import com.akinnova.EventPlannerApi.repository.CommentRepository;
-import com.akinnova.EventPlannerApi.repository.EventsRepository;
 import com.akinnova.EventPlannerApi.repository.LoggedInRepository;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CommentServiceImpl implements ICommentService {
 
     private final CommentRepository commentRepository;
-    private final EventsRepository eventsRepository;
     private final LoggedInRepository loggedInRepository;
 
     //Class Constructor
     public CommentServiceImpl(CommentRepository commentRepository,
-                              LoggedInRepository loggedInRepository, EventsRepository eventsRepository) {
+                              LoggedInRepository loggedInRepository) {
         this.commentRepository = commentRepository;
         this.loggedInRepository = loggedInRepository;
-        this.eventsRepository = eventsRepository;
     }
 
 
     @Override
     public ResponseEntity<?> commentAboutEvent(CommentDto commentDto) {
 
-        //Check that event exists in Events repository
-        if(!eventsRepository.existsByEventName(commentDto.getEventName())){
-            return new ResponseEntity<>("Event with name: " + commentDto.getEventName() + " does not exist",
-                    HttpStatus.NOT_FOUND);
-        }
         //Check that user is logged in
         if(!loggedInRepository.existsByUsername(commentDto.getUsername())){
             return new ResponseEntity<>("User with username: " + commentDto.getUsername() + " is not logged in.",
@@ -58,49 +53,54 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
-    public ResponsePojo<List<Comments>> commentByUsername(String username) {
+    public ResponseEntity<List<CommentResponseDto>> commentByUsername(String username, int pageNum, int pageSize) {
 
         //Check that Username exists in comment database...if it exists, fetch all
-        List<Comments> commentByUsername = commentRepository.findByUsername(username).get();
-        long count = commentByUsername.stream().count();
+        List<Comments> userCommentList = commentRepository.findByUsername(username)
+                .orElseThrow(()-> new ApiException("There are no comments by user: " + username));
+        List<CommentResponseDto> userComments = new ArrayList<>();
 
-        ResponsePojo<List<Comments>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Comments by User: " + username + " are: " + count + " in total." );
-        responsePojo.setData(commentByUsername);
+        userCommentList.stream().map(
+                comment -> CommentResponseDto.builder()
+                        .username(comment.getUsername())
+                        .comment(comment.getComment())
+                        .build()
+        ).forEach(userComments::add);
 
-        return responsePojo;
+        return ResponseEntity.ok()
+                .header("Comment Page No: ", String.valueOf(pageNum))
+                .header("Comment Page Size: ", String.valueOf(pageSize))
+                .header("Comment Count: ", String.valueOf(userComments.size()))
+                .body(userComments);
     }
 
     @Override
-    public ResponsePojo<List<Comments>> allComments() {
+    public ResponseEntity<List<CommentResponseDto>> allComments(int pageNum, int pageSize) {
         List<Comments> allCommentsList = commentRepository.findAll();
-        long count = allCommentsList.stream().count();
+        List<CommentResponseDto> responseDtoList = new ArrayList<>();
 
-        ResponsePojo<List<Comments>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Comments by users are: " + count + " in total.");
-        responsePojo.setData(allCommentsList);
+        allCommentsList.stream().map(
+                comments -> CommentResponseDto.builder()
+                        .comment(comments.getComment())
+                        .username(comments.getUsername())
+                        .build()
+        ).forEach(responseDtoList::add);
 
-        return responsePojo;
+        return ResponseEntity.ok()
+                .header("Comments Page No: ", String.valueOf(pageNum))
+                .header("Comments Page Size: ", String.valueOf(pageSize))
+                .header("Comments count: ", String.valueOf(responseDtoList.size()))
+                .body(responseDtoList);
     }
 
     @Override
-    public ResponseEntity<?> deleteComment(CommentDto commentDto) {
+    public ResponseEntity<?> deleteComment(CommentDto commentDto, int pageNum, int pageSize) {
         //Checks that user is logged in
-        if(!loggedInRepository.existsByUsername(commentDto.getUsername())){
+        boolean check = loggedInRepository.existsByUsername(commentDto.getUsername());
+        if(!check){
             return new ResponseEntity<>("User is not logged in", HttpStatus.BAD_REQUEST);
         }
 
-        //Check that user's comment is in Comments repository
-        if(!commentRepository.existsByUsername(commentDto.getUsername())){
-            return new ResponseEntity<>("Comments by user: " + commentDto.getUsername() + " not found.",
-                    HttpStatus.NOT_FOUND);
-        }
-
-        //To get comment which will be deleted
-        Comments commentTodelete = commentRepository.findAll().stream().filter(x -> x.getEventName().equals(commentDto.getEventName()))
-                .findFirst().get();
-
-        commentRepository.delete(commentTodelete);
         return new ResponseEntity<>("Comment deleted.", HttpStatus.ACCEPTED);
     }
 }

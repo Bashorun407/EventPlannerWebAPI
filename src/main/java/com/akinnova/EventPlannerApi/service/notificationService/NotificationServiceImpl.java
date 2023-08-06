@@ -10,9 +10,7 @@ import com.akinnova.EventPlannerApi.exception.ApiException;
 import com.akinnova.EventPlannerApi.repository.NotificationRepository;
 
 import com.akinnova.EventPlannerApi.repository.ParticipantRepository;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
-import com.akinnova.EventPlannerApi.service.notificationService.INotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,16 +21,16 @@ import java.util.Optional;
 
 @Service
 public class NotificationServiceImpl implements INotificationService {
-    @Autowired
-    private EmailService emailService;
+    private final EmailService emailService;
     private final NotificationRepository notificationRepository;
     private final ParticipantRepository participantRepository;
 
     //Class constructor
 
 
-    public NotificationServiceImpl(NotificationRepository notificationRepository,
+    public NotificationServiceImpl(EmailService emailService, NotificationRepository notificationRepository,
                                    ParticipantRepository participantRepository) {
+        this.emailService = emailService;
         this.notificationRepository = notificationRepository;
         this.participantRepository = participantRepository;
     }
@@ -56,18 +54,11 @@ public class NotificationServiceImpl implements INotificationService {
     }
 
     @Override
-    public ResponsePojo<Notification> findByEventId(String eventId) {
-        if(!notificationRepository.existsByEventId(eventId)){
-            throw new ApiException(String.format("Event with id: %s does not exist.", eventId));
-        }
+    public ResponseEntity<Notification> findNotificationByEventId(String eventId) {
+        Notification loggedInUsers = notificationRepository.findByEventId(eventId)
+                .orElseThrow(()-> new ApiException("There are no events by this id: " + eventId));
 
-        Notification notification = notificationRepository.findByEventId(eventId).get();
-
-        ResponsePojo<Notification> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Event found: ");
-        responsePojo.setData(notification);
-
-        return responsePojo;
+        return ResponseEntity.ok(loggedInUsers);
     }
 
     @Override
@@ -83,10 +74,12 @@ public class NotificationServiceImpl implements INotificationService {
         }
 
         //Fetch notification by eventId
-        Notification notification = notificationRepository.findByEventId(eventId).get();
+        Notification notification = notificationRepository.findByEventId(eventId)
+                .orElseThrow(()-> new ApiException("There are no notification by the eventId: " + eventId));
 
         //Retrieve the participants that were registered for this event from participants database
-        List<Participant> participantList = participantRepository.findByEventId(eventId).get();
+        List<Participant> participantList = participantRepository.findByEventId(eventId)
+                .orElseThrow(()-> new ApiException("There are no participants associated with eventId: " + eventId));
 
         //Instance of email that will be used to send mail notification to participants
         EmailDetail emailDetail;
@@ -132,12 +125,8 @@ public class NotificationServiceImpl implements INotificationService {
     @Override
     public ResponseEntity<?> deleteNotification(String eventId) {
 
-        if(notificationRepository.existsByEventId(eventId)){
-            return new ResponseEntity<>("Notification by the id: " + eventId + " does not exist.",
-                    HttpStatus.NOT_FOUND);
-        }
-
-        Notification notificationToDelete = notificationRepository.findByEventId(eventId).get();
+        Notification notificationToDelete = notificationRepository.findByEventId(eventId)
+                .orElseThrow(()-> new ApiException("Notification by the id: " + eventId + " does not exist."));
         notificationRepository.delete(notificationToDelete);
         return new ResponseEntity<>("Notification by id: " + eventId + " deleted successfully",
                 HttpStatus.GONE);

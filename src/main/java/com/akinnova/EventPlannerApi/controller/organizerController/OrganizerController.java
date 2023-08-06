@@ -2,6 +2,7 @@ package com.akinnova.EventPlannerApi.controller.organizerController;
 
 import com.akinnova.EventPlannerApi.dto.logInDto.LoginDto;
 import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerCreationDto;
+import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerResponseDto;
 import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerUpdateDto;
 import com.akinnova.EventPlannerApi.entity.Organizer;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/eventplanner/auth/organizer")
+@RequestMapping("/api/v1/eventPlanner/auth/organizer")
 public class OrganizerController {
 
     @Autowired
@@ -29,17 +30,18 @@ public class OrganizerController {
         return organizerService.login(loginDto);
     }
     @GetMapping("/organizers")
-    public ResponsePojo<List<Organizer>> findAllOrganizer() {
-        return organizerService.findAllOrganizer();
+    public ResponseEntity<List<OrganizerResponseDto>> findAllOrganizer(@RequestParam(defaultValue = "1") int pageNum,
+                                                                       @RequestParam(defaultValue = "10") int pageSize) {
+        return organizerService.findAllOrganizer(pageNum, pageSize);
     }
 
     @GetMapping("/organizerUname/{username}")
-    public ResponsePojo<Organizer> findByUsername(@PathVariable String username) {
+    public ResponseEntity<OrganizerResponseDto> findByUsername(@PathVariable String username) {
         return organizerService.findByUsername(username);
     }
 
     @GetMapping("/organizer/{organizerId}")
-    public ResponsePojo<Organizer> findByOrganizerId(@PathVariable String organizerId) {
+    public ResponseEntity<Organizer> findByOrganizerId(@PathVariable String organizerId) {
         return organizerService.findByOrganizerId(organizerId);
     }
 

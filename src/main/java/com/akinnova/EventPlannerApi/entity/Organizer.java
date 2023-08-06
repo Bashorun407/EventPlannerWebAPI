@@ -24,6 +24,8 @@ public class Organizer implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String imageAddress;
+
     private String organizerId;
 
     private String firstName;

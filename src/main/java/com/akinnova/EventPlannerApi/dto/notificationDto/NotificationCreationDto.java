@@ -2,6 +2,8 @@ package com.akinnova.EventPlannerApi.dto.notificationDto;
 
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class NotificationCreationDto {
 
@@ -13,7 +15,7 @@ public class NotificationCreationDto {
 
     private String mailBody;
 
-    //private LocalDateTime sentDate;
+    private LocalDateTime sentDate;
 
     private int year;
 

@@ -1,8 +1,7 @@
 package com.akinnova.EventPlannerApi.controller.loggerController;
 
+import com.akinnova.EventPlannerApi.dto.logInDto.LogResponseDto;
 import com.akinnova.EventPlannerApi.dto.logInDto.LoginDto;
-import com.akinnova.EventPlannerApi.entity.LoggedInUsers;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.service.loggerService.LoggedInUsersImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/eventplanner/auth/login")
+@RequestMapping("/api/v1/eventPlanner/auth/login")
 public class LoggedInUserController {
 
     @Autowired
@@ -24,14 +23,15 @@ public class LoggedInUserController {
         return loggedInUsers.userLogIn(loginDto);
     }
 
-    //Method to return details of all logged in users
+    //Method to return details of all logged-in users
     @GetMapping("/loggedInUsers")
-    public ResponsePojo<List<LoggedInUsers>> findAllLoggedInUsers() {
-        return loggedInUsers.findAllLoggedInUsers();
+    public ResponseEntity<List<LogResponseDto>> findAllLoggedInUsers(@RequestParam(defaultValue = "1") int pageNum,
+                                                                     @RequestParam(defaultValue = "20") int pageSize) {
+        return loggedInUsers.findAllLoggedInUsers(pageNum, pageSize);
     }
 
     @GetMapping("/loggedInUser/{username}")
-    public ResponsePojo<LoggedInUsers> findLoggedInUserByUsername(@PathVariable String username) {
+    public ResponseEntity<LogResponseDto> findLoggedInUserByUsername(@PathVariable String username) {
         return loggedInUsers.findLoggedInUserByUsername(username);
     }
 

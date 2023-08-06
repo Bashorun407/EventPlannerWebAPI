@@ -3,7 +3,6 @@ package com.akinnova.EventPlannerApi.controller.notificationController;
 import com.akinnova.EventPlannerApi.dto.notificationDto.NotificationCreationDto;
 import com.akinnova.EventPlannerApi.dto.notificationDto.NotificationUpdateDto;
 import com.akinnova.EventPlannerApi.entity.Notification;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.service.notificationService.NotificationServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/eventplanner/auth/notification")
+@RequestMapping("/api/v1/eventPlanner/auth/notification")
 public class NotificationController {
 
     @Autowired
@@ -23,8 +22,8 @@ public class NotificationController {
     }
 
     @GetMapping("/notification/{eventId}")
-    public ResponsePojo<Notification> findByEventId(@PathVariable String eventId) {
-        return notificationService.findByEventId(eventId);
+    public ResponseEntity<Notification> findNotificationByEventId(@PathVariable String eventId) {
+        return notificationService.findNotificationByEventId(eventId);
     }
 
     @PostMapping("/notify/{eventId}")

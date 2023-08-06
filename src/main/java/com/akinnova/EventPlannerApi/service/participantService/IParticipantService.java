@@ -6,12 +6,10 @@ import com.akinnova.EventPlannerApi.entity.Participant;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 public interface IParticipantService {
     ResponsePojo<Participant> registerParticipant(ParticipantCreationDto participantDto);
-    ResponsePojo<List<Participant>> findAllParticipants();
-    ResponsePojo<Participant> findByParticipantId(String participantId);
+    ResponseEntity<?> findAllParticipants(int pageNum, int pageSize);
+    ResponseEntity<?> findByParticipantId(String participantId);
 
     ResponseEntity<?> updateParticipant(ParticipantUpdateDto participantUpdateDto);
     ResponseEntity<?> deleteParticipant(String participantId);

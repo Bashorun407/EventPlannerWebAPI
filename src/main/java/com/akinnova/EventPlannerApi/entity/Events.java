@@ -19,6 +19,8 @@ public class Events {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String imageAddress;
+
     private String eventName;
 
     private String description;

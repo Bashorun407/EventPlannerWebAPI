@@ -1,18 +1,17 @@
 package com.akinnova.EventPlannerApi.service.loggerService;
 
+import com.akinnova.EventPlannerApi.dto.logInDto.LogResponseDto;
 import com.akinnova.EventPlannerApi.dto.logInDto.LoginDto;
 import com.akinnova.EventPlannerApi.entity.LoggedInUsers;
 import com.akinnova.EventPlannerApi.exception.ApiException;
 import com.akinnova.EventPlannerApi.repository.LoggedInRepository;
 import com.akinnova.EventPlannerApi.repository.OrganizerRepository;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
-import com.akinnova.EventPlannerApi.service.loggerService.ILoggedInUsersService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class LoggedInUsersImpl implements ILoggedInUsersService {
@@ -45,44 +44,41 @@ public class LoggedInUsersImpl implements ILoggedInUsersService {
     }
 
     @Override
-    public ResponsePojo<List<LoggedInUsers>> findAllLoggedInUsers() {
+    public ResponseEntity<List<LogResponseDto>> findAllLoggedInUsers(int pageNum, int pageSize) {
         List<LoggedInUsers> loggedInUsersList = loggedInRepository.findAll();
+        List<LogResponseDto> responseDtoList = new ArrayList<>();
 
-        ResponsePojo<List<LoggedInUsers>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("List of Logged in users");
-        responsePojo.setData(loggedInUsersList);
+        loggedInUsersList.stream().map(
+                loggedInUsers -> LogResponseDto.builder()
+                        .username(loggedInUsers.getUsername())
+                        .build()
+        ).forEach(responseDtoList::add);
 
-        return responsePojo;
+        return ResponseEntity.ok()
+                .header("Log in Page Number: ", String.valueOf(pageNum))
+                .header("Log in Page Size: ", String.valueOf(pageSize))
+                .header("Number of logged in Users: ", String.valueOf(responseDtoList.size()))
+                .body(responseDtoList);
     }
 
     @Override
-    public ResponsePojo<LoggedInUsers> findLoggedInUserByUsername(String username) {
-        Optional<LoggedInUsers> loggedInUsersOptional = loggedInRepository.findByUsername(username);
+    public ResponseEntity<LogResponseDto> findLoggedInUserByUsername(String username) {
+        LoggedInUsers loggedInUsers = loggedInRepository.findByUsername(username)
+                .orElseThrow(()->
+                        new ApiException(String.format("User with username: %s not logged in", username)));
+       LogResponseDto logResponseDto = LogResponseDto.builder()
+               .username(loggedInUsers.getUsername())
+               .build();
 
-        loggedInUsersOptional.orElseThrow(
-                ()-> new ApiException(String.format("User with username: %s not logged in", username)));
-        ResponsePojo<LoggedInUsers> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("User log in details");
-        responsePojo.setData(loggedInUsersOptional.get());
-
-        return responsePojo;
+        return ResponseEntity.ok(logResponseDto);
     }
 
     @Override
     public ResponseEntity<?> logOutUser(String username) {
 
-        //Check if username exists in Organizer database
-        if(!organizerRepository.existsByUsername(username)){
-            return new ResponseEntity<>("User with username: " + username + " does not exist.", HttpStatus.NOT_FOUND);
-        }
-
-        //Check if username exists in logged repository
-        if(!loggedInRepository.existsByUsername(username)){
-            return new ResponseEntity<>("User with username: " + username + " is not logged in.", HttpStatus.NO_CONTENT);
-        }
-
         //Now find user by username
-        LoggedInUsers loggedInUser = loggedInRepository.findByUsername(username).get();
+        LoggedInUsers loggedInUser = loggedInRepository.findByUsername(username)
+                .orElseThrow(()-> new ApiException("User by username: " + username + ", is not logged in."));
 
         //Remove user from database
         loggedInRepository.delete(loggedInUser);

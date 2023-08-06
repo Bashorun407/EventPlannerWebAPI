@@ -26,6 +26,8 @@ public class Participant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String imageAddress;
+
     private String participantId;
 
     private String eventName;
@@ -42,7 +44,6 @@ public class Participant {
 
     private String phoneNumber;
 
-    private String rsvpStatus;
 
     @OneToMany
     @JoinTable(name = "participant_event",

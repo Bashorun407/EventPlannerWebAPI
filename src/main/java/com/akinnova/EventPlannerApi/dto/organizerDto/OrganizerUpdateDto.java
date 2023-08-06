@@ -7,6 +7,8 @@ public class OrganizerUpdateDto {
 
     private String organizerId;
 
+    private String imageAddress;
+
     private String username;
 
     private String email;

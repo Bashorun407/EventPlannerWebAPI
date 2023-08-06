@@ -2,13 +2,13 @@ package com.akinnova.EventPlannerApi.service.organizerService;
 
 import com.akinnova.EventPlannerApi.dto.logInDto.LoginDto;
 import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerCreationDto;
+import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerResponseDto;
 import com.akinnova.EventPlannerApi.dto.organizerDto.OrganizerUpdateDto;
 import com.akinnova.EventPlannerApi.email.EmailDetail;
 import com.akinnova.EventPlannerApi.email.EmailService;
 import com.akinnova.EventPlannerApi.entity.Organizer;
 import com.akinnova.EventPlannerApi.entity.Roles;
 import com.akinnova.EventPlannerApi.exception.ApiException;
-import com.akinnova.EventPlannerApi.repository.LoggedInRepository;
 import com.akinnova.EventPlannerApi.repository.OrganizerRepository;
 import com.akinnova.EventPlannerApi.repository.RolesRepository;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
@@ -24,30 +24,26 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrganizerServiceImpl implements IOrganizerService {
     private final EmailService emailService;
     private final RolesRepository rolesRepository;
     private final OrganizerRepository organizerRepository;
-    private final LoggedInRepository loggedInRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final LoggedInUsersImpl loggedInUsers;
 
     //Class Constructor
-
-
     public OrganizerServiceImpl(EmailService emailService, RolesRepository rolesRepository,
-                                OrganizerRepository organizerRepository, LoggedInRepository loggedInRepository,
+                                OrganizerRepository organizerRepository,
                                 AuthenticationManager authenticationManager,
                                 PasswordEncoder passwordEncoder, LoggedInUsersImpl loggedInUsers) {
         this.emailService = emailService;
         this.rolesRepository = rolesRepository;
         this.organizerRepository = organizerRepository;
-        this.loggedInRepository = loggedInRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
         this.loggedInUsers = loggedInUsers;
@@ -56,6 +52,7 @@ public class OrganizerServiceImpl implements IOrganizerService {
     @Override
     public ResponsePojo<Organizer> createOrganizer(OrganizerCreationDto organizerDto) {
         Organizer organizer = Organizer.builder()
+                .imageAddress(organizerDto.getImageAddress())
                 .organizerId(ResponseUtils.generateUniqueIdentifier(5, organizerDto.getUsername()))
                 .firstName(organizerDto.getFirstName())
                 .lastName(organizerDto.getLastName())
@@ -111,64 +108,54 @@ public class OrganizerServiceImpl implements IOrganizerService {
     }
 
     @Override
-    public ResponsePojo<List<Organizer>> findAllOrganizer() {
+    public ResponseEntity<List<OrganizerResponseDto>> findAllOrganizer(int pageNum, int pageSize) {
 
         List<Organizer> organizerList = organizerRepository.findAll();
+        List<OrganizerResponseDto> responseDtoList = new ArrayList<>();
 
-        ResponsePojo<List<Organizer>> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("All organizers: ");
-        responsePojo.setData(organizerList);
-        return responsePojo;
+        organizerList.stream().map(
+                organizer -> OrganizerResponseDto.builder()
+                        .username(organizer.getUsername())
+                        .role(organizer.getRole())
+                        .build()
+        ).forEach(responseDtoList::add);
+        return ResponseEntity.ok()
+                .header("Organizer Page Number: ", String.valueOf(pageNum))
+                .header("Organizer Page Size: ", String.valueOf(pageSize))
+                .contentLength(responseDtoList.size())
+                .body(responseDtoList);
     }
 
     @Override
-    public ResponsePojo<Organizer> findByUsername(String username) {
-        Optional<Organizer> organizerOptional = organizerRepository.findByUsername(username);
+    public ResponseEntity<OrganizerResponseDto> findByUsername(String username) {
+        Organizer organizer = organizerRepository.findByUsername(username)
+                .orElseThrow(()->
+                        new ApiException(String.format("Organizer with username: %s does not exist.", username)));
+        OrganizerResponseDto responseDto = OrganizerResponseDto.builder()
+                .username(organizer.getUsername())
+                .role(organizer.getRole())
+                .build();
 
-        organizerOptional.orElseThrow(()-> new ApiException(String.format("Organizer with username: %s does not exist.", username)));
-
-        Organizer organizer = organizerOptional.get();
-
-        ResponsePojo<Organizer> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage("Organizer with username: " + username + " found.");
-        responsePojo.setData(organizer);
-
-        return responsePojo;
+        return ResponseEntity.ok(responseDto);
     }
 
     @Override
-    public ResponsePojo<Organizer> findByOrganizerId(String organizerId) {
+    public ResponseEntity<Organizer> findByOrganizerId(String organizerId) {
 
-        if(!organizerRepository.existsByOrganizerId(organizerId)){
-            throw new ApiException(String.format("Organizer with id: %s does not exist", organizerId));
-        }
+        Organizer organizer = organizerRepository.findByOrganizerId(organizerId)
+                .orElseThrow(()->new ApiException(String.format("Organizer with id: %s does not exist", organizerId)));
 
-        Organizer organizer = organizerRepository.findByOrganizerId(organizerId).get();
-
-        ResponsePojo<Organizer> responsePojo = new ResponsePojo<>();
-        responsePojo.setMessage(String.format(ResponseUtils.FOUND_MESSAGE, organizer.getUsername()));
-        responsePojo.setData(organizer);
-
-        return responsePojo;
+        return ResponseEntity.ok(organizer);
     }
 
     @Override
     public ResponseEntity<?> updateOrganizer(OrganizerUpdateDto organizerUpdateDto) {
-        //Checks if an organizer exists in the Organizer database
-        if(!organizerRepository.existsByOrganizerId(organizerUpdateDto.getOrganizerId())){
-            return new ResponseEntity<>("Organizer with id: " + organizerUpdateDto.getOrganizerId()
-                    + " does not exist.",
-                    HttpStatus.NOT_FOUND);
-        }
 
-        //Checks if Organizer is logged in
-        if(!loggedInRepository.existsByUsername(organizerUpdateDto.getUsername())){
-            return new ResponseEntity<>("Organizer with username: " + organizerUpdateDto.getUsername()
-                    + "is not logged in", HttpStatus.FORBIDDEN);
-        }
+        Organizer organizerToUpdate = organizerRepository.findByOrganizerId(organizerUpdateDto.getOrganizerId())
+                .orElseThrow(()-> new ApiException("Organizer with id: " + organizerUpdateDto.getOrganizerId()
+                        + " does not exist."));
 
-        Organizer organizerToUpdate = organizerRepository.findByOrganizerId(organizerUpdateDto.getOrganizerId()).get();
-
+        organizerToUpdate.setImageAddress(organizerUpdateDto.getImageAddress());
         organizerToUpdate.setUsername(organizerUpdateDto.getUsername());
         organizerToUpdate.setEmail(organizerUpdateDto.getEmail());
         organizerToUpdate.setPhoneNumber(organizerUpdateDto.getPhoneNumber());
@@ -183,12 +170,9 @@ public class OrganizerServiceImpl implements IOrganizerService {
 
     @Override
     public ResponseEntity<?> deleteOrganizer(String organizerId) {
-        //Checks if the organizer exists in the Organizer database
-        if(!organizerRepository.existsByOrganizerId(organizerId)){
-            return new ResponseEntity<>("Organizer with id: " + organizerId + " does not exist.", HttpStatus.NOT_FOUND);
-        }
 
-        Organizer organizer = organizerRepository.findByOrganizerId(organizerId).get();
+        Organizer organizer = organizerRepository.findByOrganizerId(organizerId)
+                .orElseThrow(()-> new ApiException("Organizer with id: " + organizerId + " does not exist."));
         organizerRepository.delete(organizer);
 
         return new ResponseEntity<>("Organizer id: " + organizerId + " deleted successfully.", HttpStatus.GONE);

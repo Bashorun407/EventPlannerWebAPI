@@ -30,10 +30,12 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize ->
-                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/eventplanner/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/v1/eventplanner/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.PUT, "/api/v1/eventplanner/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/api/v1/eventplanner/auth/**").permitAll()
+                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/eventPlanner/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/eventPlanner/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.PUT, "/api/v1/eventPlanner/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.DELETE, "/api/v1/eventPlanner/auth/**").permitAll()
+//                                .requestMatchers("/swagger-ui/index.html").permitAll()
+                                .requestMatchers("/**").permitAll()
                                 .anyRequest().authenticated()
                 ).httpBasic(Customizer.withDefaults());
 

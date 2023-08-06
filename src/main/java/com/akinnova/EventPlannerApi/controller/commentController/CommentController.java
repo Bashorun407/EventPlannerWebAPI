@@ -1,8 +1,7 @@
 package com.akinnova.EventPlannerApi.controller.commentController;
 
 import com.akinnova.EventPlannerApi.dto.commentDto.CommentDto;
-import com.akinnova.EventPlannerApi.entity.Comments;
-import com.akinnova.EventPlannerApi.response.ResponsePojo;
+import com.akinnova.EventPlannerApi.dto.commentDto.CommentResponseDto;
 import com.akinnova.EventPlannerApi.service.commentService.CommentServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +23,22 @@ public class CommentController {
     }
 
     @GetMapping("/comment/{username}")
-    public ResponsePojo<List<Comments>> commentByUsername(@PathVariable String username) {
-        return commentService.commentByUsername(username);
+    public ResponseEntity<List<CommentResponseDto>> commentByUsername(@PathVariable String username,
+                                                                      @RequestParam(defaultValue = "1") int pageNum,
+                                                                      @RequestParam(defaultValue = "10") int pageSize) {
+        return commentService.commentByUsername(username, pageNum, pageSize);
     }
 
     @GetMapping("/comments")
-    public ResponsePojo<List<Comments>> allComments() {
-        return commentService.allComments();
+    public ResponseEntity<List<CommentResponseDto>> allComments(@RequestParam(defaultValue = "1") int pageNum,
+                                                                @RequestParam(defaultValue = "10") int pageSize) {
+        return commentService.allComments(pageNum, pageSize);
     }
 
     @DeleteMapping("/comment")
-    public ResponseEntity<?> deleteComment(@RequestBody CommentDto commentDto) {
-        return commentService.deleteComment(commentDto);
+    public ResponseEntity<?> deleteComment(@RequestBody CommentDto commentDto,
+                                           @RequestParam int pageNum,
+                                           @RequestParam int pageSize) {
+        return commentService.deleteComment(commentDto, pageNum, pageSize);
     }
 }

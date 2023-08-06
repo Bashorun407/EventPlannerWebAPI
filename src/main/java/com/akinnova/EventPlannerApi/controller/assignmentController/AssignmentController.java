@@ -2,6 +2,7 @@ package com.akinnova.EventPlannerApi.controller.assignmentController;
 
 import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentCreationDto;
 import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentDeleteDto;
+import com.akinnova.EventPlannerApi.dto.assignmentDto.AssignmentResponseDto;
 import com.akinnova.EventPlannerApi.entity.Assignment;
 import com.akinnova.EventPlannerApi.response.ResponsePojo;
 import com.akinnova.EventPlannerApi.service.assignmentService.AssignmentServiceImpl;
@@ -21,31 +22,34 @@ public class AssignmentController {
 
     //This method was implemented in Participant entity class
     @GetMapping("/assignment")
-    public ResponsePojo<Assignment> createAssignment(@RequestBody AssignmentCreationDto assignmentDto) {
+    public ResponsePojo<AssignmentResponseDto> createAssignment(@RequestBody AssignmentCreationDto assignmentDto) {
         return assignmentService.createAssignment(assignmentDto);
     }
 
     //Method to fetch all assignments
     @GetMapping("/assignments")
-    public ResponsePojo<List<Assignment>> findAllAssignments() {
-        return assignmentService.findAllAssignments();
+    public ResponseEntity<List<AssignmentResponseDto>> findAllAssignments(@RequestParam(defaultValue = "1") int pageNum,
+                                                                    @RequestParam(defaultValue = "10") int pageSize) {
+        return assignmentService.findAllAssignments(pageNum, pageSize);
     }
 
     //Method to fetch assignment by email
     @GetMapping("/assigneeMail/{email}")
-    public ResponsePojo<Assignment> findAssignmentByEmail(@PathVariable String email) {
+    public ResponseEntity<AssignmentResponseDto> findAssignmentByEmail(@PathVariable String email) {
         return assignmentService.findAssignmentByEmail(email);
     }
 
     //This method finds Participants by EventId
     @GetMapping("/assigneeEvent/{eventId}")
-    public ResponsePojo<List<Assignment>> findAssignmentByEventId(@PathVariable String eventId) {
-        return assignmentService.findAssignmentByEventId(eventId);
+    public ResponseEntity<List<AssignmentResponseDto>> findAssignmentByEventId(@PathVariable String eventId,
+                                                                         @RequestParam(defaultValue = "1") int pageNum,
+                                                                         @RequestParam(defaultValue = "10") int pageSize) {
+        return assignmentService.findAssignmentByEventId(eventId, pageNum, pageSize);
     }
 
     //Method to fetch assignment by phone number
     @GetMapping("/assignmentP/{phoneNumber}")
-    public ResponsePojo<Assignment> findAssignmentByPhoneNumber(@PathVariable String phoneNumber) {
+    public ResponseEntity<AssignmentResponseDto> findAssignmentByPhoneNumber(@PathVariable String phoneNumber) {
         return assignmentService.findAssignmentByPhoneNumber(phoneNumber);
     }
 

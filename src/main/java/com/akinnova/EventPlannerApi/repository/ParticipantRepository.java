@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 @Repository
 public interface ParticipantRepository extends JpaRepository<Participant, Long> {
-    Boolean existsByParticipantId(String participantId);
+    //Boolean existsByParticipantId(String participantId);
     Boolean existsByEventId(String eventId);
     Optional<Participant> findByParticipantId(String participantId);
     Optional<List<Participant>> findByEventId(String eventId);

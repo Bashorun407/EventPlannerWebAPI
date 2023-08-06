@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class OrganizerCreationDto {
-
+    private String imageAddress;
     private String firstName;
 
     private String lastName;
